@@ -50,6 +50,7 @@ export default async function AdminDashboard() {
             { title: "Reservas", desc: "Ver y gestionar todas las citas agendadas", href: "/admin/reservas" },
             { title: "Clientes", desc: "Directorio de clientes registrados", href: "/admin/clientes" },
             { title: "Feedback & NPS", desc: "Resultados de encuestas y comentarios", href: "/admin/feedback" },
+            { title: "Configuración", desc: "Datos del spa y enlace de reseñas de Google", href: "/admin/configuracion" },
           ].map((item) => (
             <Link key={item.href} href={item.href} className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 hover:shadow-md hover:border-rose-200 transition-all">
               <h2 className="font-semibold text-stone-800 mb-1">{item.title}</h2>

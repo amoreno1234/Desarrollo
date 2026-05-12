@@ -19,7 +19,10 @@ export default function Navbar() {
             <>
               <Link href="/cuenta" className="text-stone-600 hover:text-rose-700">Mi cuenta</Link>
               {role === "ADMIN" && (
-                <Link href="/admin" className="text-stone-600 hover:text-rose-700">Admin</Link>
+                <>
+                  <Link href="/admin" className="text-stone-600 hover:text-rose-700">Admin</Link>
+                  <Link href="/admin/configuracion" className="text-stone-600 hover:text-rose-700">Config</Link>
+                </>
               )}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
