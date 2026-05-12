@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum Duration {
+  THIRTY_MIN
+  ONE_HOUR
+  TWO_HOURS
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  phone         String?
+  password      String?
+  role          Role      @default(CLIENT)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  appointments  Appointment[]
+  feedback      Feedback[]
+  pushSubs      PushSubscription[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  duration    Duration
+  price       Float
+  imageUrl    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  clientId  String
+  serviceId String
+  date      DateTime          @db.Date
+  startTime String
+  endTime   String
+  status    AppointmentStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  client        User           @relation(fields: [clientId], references: [id])
+  service       Service        @relation(fields: [serviceId], references: [id])
+  feedback      Feedback?
+  notifications Notification[]
+}
+
+model Feedback {
+  id            String   @id @default(cuid())
+  appointmentId String   @unique
+  clientId      String
+  npsScore      Int
+  createdAt     DateTime @default(now())
+
+  appointment    Appointment     @relation(fields: [appointmentId], references: [id])
+  client         User            @relation(fields: [clientId], references: [id])
+  feedbackDetail FeedbackDetail?
+}
+
+model FeedbackDetail {
+  id         String   @id @default(cuid())
+  feedbackId String   @unique
+  name       String
+  email      String
+  phone      String?
+  comment    String
+  createdAt  DateTime @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id])
+}
+
+model Notification {
+  id            String             @id @default(cuid())
+  appointmentId String
+  type          NotificationType
+  status        NotificationStatus @default(PENDING)
+  scheduledAt   DateTime
+  sentAt        DateTime?
+  createdAt     DateTime           @default(now())
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SpaSettings {
+  id              String @id @default("singleton")
+  googleReviewUrl String @default("")
+  spaName         String @default("Spa & Beauty")
+  spaPhone        String @default("")
+  spaEmail        String @default("")
+  spaAddress      String @default("")
+}
