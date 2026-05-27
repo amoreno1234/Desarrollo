@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d1f12" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Panini Mundial 2026</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────── -->
+<header class="app-header">
+  <div class="header-content">
+    <h1>⚽ Panini Mundial 2026</h1>
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">0 / 472</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Bottom Nav ─────────────────────────────────────────────────────── -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="scanner">
+    <span class="nav-icon">📷</span>
+    <span>Escanear</span>
+  </button>
+  <button class="nav-item" data-tab="album">
+    <span class="nav-icon">📖</span>
+    <span>Álbum</span>
+  </button>
+  <button class="nav-item" data-tab="stats">
+    <span class="nav-icon">📊</span>
+    <span>Stats</span>
+  </button>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────────────────── -->
+<main class="app-main">
+
+  <!-- SCANNER TAB -->
+  <div id="tab-scanner" class="tab-content active">
+
+    <div class="video-container">
+      <video id="video" playsinline muted></video>
+      <div class="scanner-overlay" id="scannerOverlay">
+        <div class="scan-frame">
+          <div class="scan-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <p id="scanHint">Activa la cámara o ingresa el código manualmente</p>
+
+    <button class="camera-btn" id="toggleCamera">📷 Activar cámara</button>
+
+    <div class="manual-entry">
+      <input type="text" id="codeInput"
+             placeholder="Código (ej: ARG-1, MEX-B, 45)"
+             autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button class="add-btn" id="addBtn">Agregar</button>
+    </div>
+
+    <div class="scanner-help">
+      <strong>¿Cómo ingresar estampas?</strong><br>
+      Escanea el código QR/barras de tu estampa o escríbelo:<br>
+      <div class="code-examples">
+        <span class="code-chip" title="Clic para agregar ejemplo">ARG-1</span>
+        <span class="code-chip">MEX-B</span>
+        <span class="code-chip">BRA-F</span>
+        <span class="code-chip">ESP-3</span>
+        <span class="code-chip">FWC1</span>
+        <span class="code-chip">STA1</span>
+        <span class="code-chip">21</span>
+      </div>
+      <br>
+      <strong>Formato:</strong> <code>EQUIPO-NÚMERO</code> (B=escudo, F=foto, 1–7=jugadores)<br>
+      O solo el número de la estampa (1–472)<br>
+      <br>
+      <strong>Nota:</strong> La cámara requiere HTTPS o localhost.
+    </div>
+  </div>
+
+  <!-- ALBUM TAB -->
+  <div id="tab-album" class="tab-content">
+    <div class="album-toolbar">
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all">Todas</button>
+        <button class="filter-btn" data-filter="owned">✔ Tengo</button>
+        <button class="filter-btn" data-filter="missing">✗ Me faltan</button>
+        <button class="filter-btn" data-filter="repeated">↻ Repetidas</button>
+      </div>
+      <div class="search-row">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar jugador o código…" />
+        <select id="sectionFilter"></select>
+      </div>
+    </div>
+    <div id="albumGrid"></div>
+  </div>
+
+  <!-- STATS TAB -->
+  <div id="tab-stats" class="tab-content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-number" id="statOwned">0</span>
+        <span class="stat-label">Tengo</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number" id="statMissing">—</span>
+        <span class="stat-label">Me faltan</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number" id="statPercent">0%</span>
+        <span class="stat-label">Completado</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number" id="statRepeated">0</span>
+        <span class="stat-label">Repetidas</span>
+      </div>
+    </div>
+
+    <div class="stats-actions">
+      <button class="btn btn-export" id="exportBtn">📤 Exportar lista</button>
+      <button class="btn btn-reset"  id="resetBtn">🗑 Reiniciar</button>
+    </div>
+
+    <p class="team-progress-title">Progreso por equipo</p>
+    <div id="teamProgress"></div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ZXing barcode/QR scanner -->
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+  // Quick-add demo codes from the chips
+  document.querySelectorAll('.code-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('codeInput').value = chip.textContent.trim();
+      document.getElementById('codeInput').focus();
+    });
+  });
+</script>
+
+</body>
+</html>
