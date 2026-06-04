@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d1f12" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Snake — Desarrollo</title>
+  <style>
+    :root {
+      --green:  #1a7a3c;
+      --green2: #25a352;
+      --gold:   #C8A951;
+      --dark:   #0d1f12;
+      --surface:#1b2e20;
+      --card:   #243228;
+      --text:   #f0f4f1;
+      --muted:  #8da090;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100%;
+      padding: 16px 12px 24px;
+      gap: 14px;
+    }
+
+    /* Header */
+    .header {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+
+    .back-link {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border: 1px solid #2d4032;
+      border-radius: 99px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); border-color: var(--gold); }
+
+    /* Score bar */
+    .scorebar {
+      width: 100%;
+      max-width: 420px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .score-box {
+      background: var(--card);
+      border: 1px solid #2d4032;
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.62rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 3px;
+    }
+
+    /* Canvas */
+    canvas {
+      display: block;
+      border: 2px solid #2d4032;
+      border-radius: 12px;
+      touch-action: none;
+      width: 100%;
+      max-width: 420px;
+      height: auto;
+    }
+
+    /* D-Pad (shown only on touch devices via CSS) */
+    .dpad {
+      display: none;
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(3, 56px);
+      gap: 4px;
+    }
+
+    @media (pointer: coarse) {
+      .dpad { display: grid; }
+    }
+
+    .dpad-btn {
+      background: var(--card);
+      border: 1.5px solid #2d4032;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-btn:active { background: var(--surface); transform: scale(0.92); }
+    .dpad-btn.empty  { visibility: hidden; }
+
+    /* Action buttons */
+    .actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-start { background: var(--green2); color: #fff; }
+    .btn-pause { background: var(--card); color: var(--gold); border: 1.5px solid #2d4032; }
+
+    /* Controls hint */
+    .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="header">
+    <h1>🐍 Snake</h1>
+    <a href="index.html" class="back-link">← Volver</a>
+  </div>
+
+  <div class="scorebar">
+    <div class="score-box">
+      <div class="score-value" id="score">0</div>
+      <div class="score-label">Puntos</div>
+    </div>
+    <div class="score-box">
+      <div class="score-value" id="hiScore">0</div>
+      <div class="score-label">Récord</div>
+    </div>
+    <div class="score-box">
+      <div class="score-value" id="level">1</div>
+      <div class="score-label">Nivel</div>
+    </div>
+  </div>
+
+  <canvas id="gameCanvas" width="420" height="420"></canvas>
+
+  <!-- On-screen D-Pad for touch devices -->
+  <div class="dpad" id="dpad">
+    <div class="dpad-btn empty"></div>
+    <button class="dpad-btn" id="dUp">▲</button>
+    <div class="dpad-btn empty"></div>
+    <button class="dpad-btn" id="dLeft">◀</button>
+    <button class="dpad-btn" id="dCenter" title="Pausa">⏸</button>
+    <button class="dpad-btn" id="dRight">▶</button>
+    <div class="dpad-btn empty"></div>
+    <button class="dpad-btn" id="dDown">▼</button>
+    <div class="dpad-btn empty"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-start" id="btnStart">▶ Iniciar</button>
+    <button class="btn btn-pause" id="btnPause">⏸ Pausar</button>
+  </div>
+
+  <p class="hint">
+    Flechas / WASD para mover &nbsp;·&nbsp; P o Esc para pausar<br>
+    En móvil: desliza sobre el tablero o usa el D-Pad
+  </p>
+
+</div>
+
+<script src="js/snake.js"></script>
+<script>
+  // Wire up D-Pad buttons
+  const dpadMap = {
+    dUp:    { x: 0, y: -1 },
+    dDown:  { x: 0, y:  1 },
+    dLeft:  { x: -1, y: 0 },
+    dRight: { x: 1,  y: 0 },
+  };
+  Object.entries(dpadMap).forEach(([id, d]) => {
+    document.getElementById(id).addEventListener('click', () => {
+      if (state === 'over' || state === 'idle') { init(); return; }
+      if (d.x !== -dir.x || d.y !== -dir.y) nextDir = d;
+    });
+  });
+  document.getElementById('dCenter').addEventListener('click', () => {
+    if (state !== 'over') pause();
+  });
+</script>
+
+</body>
+</html>
